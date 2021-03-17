@@ -1,0 +1,25 @@
+exclude: test
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-json
+      - id: check-yaml
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+  - repo: git://github.com/dnephin/pre-commit-golang
+    rev: master
+    hooks:
+      - id: go-fmt
+      - id: go-vet
+      - id: go-lint
+      - id: go-imports
+      - id: go-cyclo
+        args: [-over=15]
+      - id: validate-toml
+      - id: no-go-testing
+      - id: golangci-lint
+        args: [--skip-dirs=test]
+      - id: go-critic
+      - id: go-unit-tests
+      - id: go-build
