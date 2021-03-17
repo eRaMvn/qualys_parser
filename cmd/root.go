@@ -32,11 +32,11 @@ var rootCmd = &cobra.Command{
 		if outputFileName == "" {
 			outputFileName = "parsing_result.json"
 		}
-		hostIp, _ = cmd.Flags().GetString("host")
+		hostIP, _ = cmd.Flags().GetString("host")
 		listOnly, _ = cmd.Flags().GetBool("list")
 		pkgName, _ = cmd.Flags().GetString("pkg")
-		reportByIp, _ := cmd.Flags().GetBool("ip")
-		if reportByIp {
+		reportByIP, _ := cmd.Flags().GetBool("ip")
+		if reportByIP {
 			GetVulnerabilitiesByIP()
 		} else {
 			GetVulnerabilities()

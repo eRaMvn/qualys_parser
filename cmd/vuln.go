@@ -13,17 +13,18 @@ import (
 
 var pkgName string
 
+// VulnRecord is the struct containing values within a vulnerability record
 type VulnRecord struct {
 	CveTitle string   `json:"csv_title"`
 	Severity string   `json:"severity"`
 	Solution string   `json:"solution"`
 	Count    int      `json:"count"`
-	IpList   []string `json:"ip_list"`
+	IPList   []string `json:"ip_list"`
 }
 
-// CheckIfIpExist checks if ip exists in a slice
-func CheckIfIpExist(ip string, IpList []string) bool {
-	for _, value := range IpList {
+// CheckIfIPExist checks if ip exists in a slice
+func CheckIfIPExist(ip string, IPList []string) bool {
+	for _, value := range IPList {
 		if value == ip {
 			return true
 		}
@@ -43,13 +44,13 @@ func PrsRrdVuln(vulnDict map[string]VulnRecord, record []string, severityMap map
 				Severity: severityMap[record[11]],
 				Solution: record[28],
 				Count:    1,
-				IpList:   []string{record[0]},
+				IPList:   []string{record[0]},
 			}
 		}
 
 		// Check if the ip is in the list of ips belonging to the vuln record
-		if !CheckIfIpExist(record[0], vulnDict[pkg].IpList) {
-			newIPList := append(vulnDict[pkg].IpList, record[0])
+		if !CheckIfIPExist(record[0], vulnDict[pkg].IPList) {
+			newIPList := append(vulnDict[pkg].IPList, record[0])
 			newCount := vulnDict[pkg].Count + 1
 
 			vulnDict[pkg] = VulnRecord{
@@ -57,7 +58,7 @@ func PrsRrdVuln(vulnDict map[string]VulnRecord, record []string, severityMap map
 				Severity: vulnDict[pkg].Severity,
 				Solution: vulnDict[pkg].Solution,
 				Count:    newCount,
-				IpList:   newIPList,
+				IPList:   newIPList,
 			}
 		}
 	}
@@ -72,12 +73,13 @@ func GetVulnDictKeys(vulnDict map[string]VulnRecord) []string {
 	return vulnList
 }
 
-// WriteMapToFile write to json file given a map
+// WriteVulnMapToFile write to json file given a map
 func WriteVulnMapToFile(fileName string, ipDict map[string]VulnRecord) {
 	jsonString, _ := json.Marshal(ipDict)
-	ioutil.WriteFile(fileName, jsonString, os.ModePerm)
+	_ = ioutil.WriteFile(fileName, jsonString, os.ModePerm)
 }
 
+// GetVulnerabilities parses input report
 func GetVulnerabilities() {
 	vulnDict := make(map[string]VulnRecord)
 	severityMap := map[string]string{
@@ -96,7 +98,7 @@ func GetVulnerabilities() {
 
 	r := csv.NewReader(f)
 
-	ip_order := 0
+	ipOrder := 0
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -104,11 +106,11 @@ func GetVulnerabilities() {
 		}
 
 		if record[0] == "IP" {
-			ip_order += 1
+			ipOrder++
 			continue
 		}
 
-		if ip_order == 2 {
+		if ipOrder == 2 {
 			PrsRrdVuln(vulnDict, record, severityMap)
 		}
 	}
@@ -126,11 +128,11 @@ func GetVulnerabilities() {
 
 	} else {
 		_, valueInDict := vulnDict[pkgName]
-		if len(vulnDict[pkgName].IpList) == 0 || !valueInDict {
+		if len(vulnDict[pkgName].IPList) == 0 || !valueInDict {
 			fmt.Printf("The ip(s) for the package %s cannot be found!\n", pkgName)
 		} else {
 			fmt.Printf("The ip(s) found for the package %s are:\n", pkgName)
-			fmt.Println(strings.Join(vulnDict[pkgName].IpList, "\n"))
+			fmt.Println(strings.Join(vulnDict[pkgName].IPList, "\n"))
 		}
 	}
 }

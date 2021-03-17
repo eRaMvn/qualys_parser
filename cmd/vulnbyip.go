@@ -14,11 +14,11 @@ import (
 var inputFileName string
 var outputFileName string
 var detailSet bool
-var hostIp string
+var hostIP string
 var listOnly bool
 
-// PrsRrdVulnByIp parses each record in csv and updates the dictionary
-func PrsRrdVulnByIp(ipDict map[string]map[string]bool, ip string, packages *[]string) {
+// PrsRrdVulnByIP parses each record in csv and updates the dictionary
+func PrsRrdVulnByIP(ipDict map[string]map[string]bool, ip string, packages *[]string) {
 	// Check if value in Dictionary
 	_, valueInDict := ipDict[ip]
 	if !valueInDict {
@@ -83,13 +83,13 @@ func GetIPDictKeys(ipDict map[string]map[string]bool) []string {
 	return ipList
 }
 
-// WriteMapToFile write to json file given a map
+// WriteIPMapToFile writes to json file given a map
 func WriteIPMapToFile(fileName string, ipDict map[string][]string) {
 	jsonString, _ := json.Marshal(ipDict)
-	ioutil.WriteFile(fileName, jsonString, os.ModePerm)
+	_ = ioutil.WriteFile(fileName, jsonString, os.ModePerm)
 }
 
-// GetVulnerabilitiesByIP get the list of vulnerabilities for each ip
+// GetVulnerabilitiesByIP gets the list of vulnerabilities for each ip
 func GetVulnerabilitiesByIP() {
 	ipDict := make(map[string]map[string]bool)
 
@@ -101,7 +101,7 @@ func GetVulnerabilitiesByIP() {
 
 	r := csv.NewReader(f)
 
-	ip_order := 0
+	ipOrder := 0
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -109,19 +109,19 @@ func GetVulnerabilitiesByIP() {
 		}
 
 		if record[0] == "IP" {
-			ip_order += 1
+			ipOrder++
 			continue
 		}
 
-		if ip_order == 2 {
+		if ipOrder == 2 {
 			// 31 is Result field
 			packages := ParsePackage(record[31])
-			PrsRrdVulnByIp(ipDict, record[0], &packages)
+			PrsRrdVulnByIP(ipDict, record[0], &packages)
 		}
 	}
 
 	convertedDict := convertDict(ipDict)
-	if hostIp == "" {
+	if hostIP == "" {
 		if listOnly {
 			ipDictKeys := GetIPDictKeys(ipDict)
 			fmt.Printf("The IPs with vulnerable packages:\n")
@@ -131,11 +131,11 @@ func GetVulnerabilitiesByIP() {
 			WriteIPMapToFile(outputFileName, convertedDict)
 		}
 	} else {
-		if len(convertedDict[hostIp]) == 0 {
-			fmt.Printf("The vulnerable package(s) found for the host %s cannot be found!\n", hostIp)
+		if len(convertedDict[hostIP]) == 0 {
+			fmt.Printf("The vulnerable package(s) found for the host %s cannot be found!\n", hostIP)
 		} else {
-			fmt.Printf("The vulnerable package(s) found for the host %s are:\n", hostIp)
-			fmt.Println(strings.Join(convertedDict[hostIp], "\n"))
+			fmt.Printf("The vulnerable package(s) found for the host %s are:\n", hostIP)
+			fmt.Println(strings.Join(convertedDict[hostIP], "\n"))
 		}
 	}
 }
